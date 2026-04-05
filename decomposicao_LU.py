@@ -24,33 +24,30 @@ def lu_factor_parallel_with_lu(A):
     ipvt = np.arange(n)
     info = 0
 
-    for k in range(n - 1):
-        pivot_row = k + np.argmax(np.abs(A[k:, k]))
-        ipvt[k] = pivot_row
-
-        if pivot_row != k:
-            A[[k, pivot_row], :] = A[[pivot_row, k], :]
-
-        if A[k, k] == 0:
-            info = k
-            continue
-
-        A[k + 1 :, k] /= A[k, k]
-
-    def saxpy(j):
-        A[k + 1 :, j] -= A[k, j] * A[k + 1 :, k]
-
     with ThreadPoolExecutor() as executor:
-        futures = [executor.submit(saxpy, j) for j in range(k + 1, n)]
-        for f in futures:
-            f.result()
+        for k in range(n - 1):
+            pivot_row = k + np.argmax(np.abs(A[k:, k]))
+            ipvt[k] = pivot_row
 
-    if A[n - 1, n - 1] == 0:
-        info = n - 1
+            if pivot_row != k:
+                A[[k, pivot_row], :] = A[[pivot_row, k], :]
+
+            if A[k, k] == 0:
+                info = k
+                continue
+
+            A[k + 1 :, k] /= A[k, k]
+
+            def saxpy(j):
+                A[k + 1 :, j] -= A[k, j] * A[k + 1 :, k]
+
+            list(executor.map(saxpy, range(k + 1, n)))
+
+        if A[n - 1, n - 1] == 0:
+            info = n - 1
 
     L = np.tril(A, k=-1) + np.eye(n, dtype=A.dtype)
     U = np.triu(A)
-
     return L, U, ipvt, info
 
 
