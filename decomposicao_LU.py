@@ -77,4 +77,4 @@ print("\nP @ A:")
 
 print(LU)
 
-print("\Erro (norma Frobenius):", np.linalg.norm(reconstructed - LU))
+print("\nErro (norma Frobenius):", np.linalg.norm(reconstructed - LU))
