@@ -37,7 +37,7 @@ class StudentBlock:
 
             if current_block.hash != current_block.create_hash():
                 return False
-            if current_block != previous_block.hash:
+            if current_block.prior_hash != previous_block.hash:
                 return False
             
         return True
